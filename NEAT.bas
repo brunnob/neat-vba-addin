@@ -11,7 +11,7 @@ End With
 
 End Sub
 Sub Deploy()
-'Run this to "complile" changes for release
+'Run this to "complile" changes for release. Save the new version .xlsm format
     
     With ThisWorkbook.Sheets("NEAT")
         .Range("Checkem") = 0
@@ -19,11 +19,11 @@ Sub Deploy()
         .Range(Range("22:22"), Range("26:26")).EntireRow.Hidden = True
         .Protect "gotcha"
     End With
-    ThisWorkbook.IsAddin = True
+    'ThisWorkbook.IsAddin = True
 End Sub
 Function MyVersion() As String
 
-    MyVersion = "0.91"
+    MyVersion = "0.92"
 
 End Function
 Sub Auto_Open()
@@ -396,6 +396,7 @@ End Sub
 
 '''''''''' SUBS
 
+
 Sub SaveA1Active(Optional control As IRibbonControl)
     
     Call SaveSub(1)
@@ -443,7 +444,14 @@ End If
     On Error GoTo errhandle
     mys = ActiveWorkbook.Name
     myPath = ActiveWorkbook.Path
-    FileExt = Right(mys, Len(mys) - InStrRev(mys, ".") + 1)
+
+'DH 08/04/2018
+'Implemented to avoid ocasional errors occuring on retrieving the file format
+    If InStrRev(mys, ".") = 0 Then
+        FileExt = GetFormatType()
+        Else
+            FileExt = Right(mys, Len(mys) - InStrRev(mys, ".") + 1)
+    End If
 
 'Grabs initials from Config file
     MyInit = MyId()
@@ -542,7 +550,14 @@ End If
     On Error GoTo errhandle
     mys = ActiveWorkbook.Name
     myPath = ActiveWorkbook.Path
-    FileExt = Right(mys, Len(mys) - InStrRev(mys, ".") + 1)
+
+'DH 08/04/2018
+'Implemented to avoid ocasional errors occuring on retrieving the file format
+    If InStrRev(mys, ".") = 0 Then
+        FileExt = GetFormatType()
+        Else
+            FileExt = Right(mys, Len(mys) - InStrRev(mys, ".") + 1)
+    End If
     
 'Grabs initials from Config file
     MyInit = MyId()
@@ -662,12 +677,50 @@ SecUnd = Right(Name, Len(Name) - InStr(InStr(Name, "_") + 1, Name, "_"))
     End If
 
 End Function
+Function GetFormatType() As String
 
+'DH 08/04/2018
+'Implemented to correct occasional error on retrieving file format type
 
+Dim FormatCode As Integer
+Dim FileExtension As String
 
+    FormatCode = ActiveWorkbook.FileFormat
+    
+    Select Case FormatCode
+        
+        Case Is = -4518, 19, 21
+            FileExtension = ".txt"
+        
+        Case Is = 6, 22, 24, 62
+            FileExtension = ".csv"
+        
+        Case Is = 36
+            FileExtension = ".prn"
+        
+        Case Is = 45
+            FileExtension = ".mht"
+        
+        Case Is = 50
+            FileExtension = ".xlsb"
+        
+        Case Is = 51
+            FileExtension = ".xlsx"
+        
+        Case Is = 52
+            FileExtension = ".xlsm"
+        
+        Case Is = 56
+            FileExtension = ".xls"
+            
+    End Select
+
+    GetFormatType = FileExtension
+
+End Function
 
 'New Window
-Sub NewWindow() '(Optional control As IRibbonControl)
+Sub NewWindow(Optional control As IRibbonControl)
 
     Dim ws As Worksheet, wSCurrent As Worksheet
     Dim Zoom As String
@@ -676,18 +729,24 @@ Sub NewWindow() '(Optional control As IRibbonControl)
     Set wSCurrent = ActiveSheet
     Application.ScreenUpdating = False
     
+    On Error GoTo ErrHandler
+    
     Zoom = MyZoom()
         
     For Each ws In Sheets
         ws.Activate
         ActiveWindow.Zoom = Zoom
         ActiveWindow.DisplayGridlines = False
+        MsgBox ws
     Next ws
  
     wSCurrent.Select
     Application.ScreenUpdating = True
 
     ActiveWorkbook.Windows.Arrange ArrangeStyle:=xlVertical
+    
+ErrHandler:
+    Resume Next
 
 End Sub
 
@@ -711,7 +770,7 @@ Sub MasterNewSheet(SheetIndex As Integer)
     ActiveWindow.Zoom = Zoom
     
 End Sub
-Sub NewSheet() '(Optional control As IRibbonControl)
+Sub NewSheet(Optional control As IRibbonControl)
 
     'Inserts new blank sheet after the active worksheet
     
@@ -804,7 +863,7 @@ ErrHandler:
     
 End Sub
 
-Sub CantTouchThis(Optional control As IRibbonControl)
+Sub cantTouchThis(Optional control As IRibbonControl)
 
     On Error Resume Next
     ActiveSheet.Visible = xlVeryHidden
