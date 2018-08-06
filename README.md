@@ -3,7 +3,7 @@ neat is an Excel Add-in designed to increase your productivity
 
 More info and colors at http://www.neataddin.com/
 
-##Instructions for contribution
+## Instructions for contribution
 
 1. Download .xlsm file
 2. Edit directly into Excel VBA IDE
